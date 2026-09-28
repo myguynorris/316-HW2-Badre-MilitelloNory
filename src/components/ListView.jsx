@@ -27,6 +27,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useListEditor } from '../hooks/useListEditor.js';
 import { useUndoRedoShortcuts } from '../hooks/useUndoRedoShortcuts.js';
 import { useLists } from '../context/ListsContext.jsx';
+import ItemCard from './ItemCard.jsx';
 
 export default function ListView() {
     const { list, canUndo, canRedo, undo, redo, closeList, moveItem, renameList } = useListEditor();
