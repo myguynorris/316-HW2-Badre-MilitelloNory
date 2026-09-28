@@ -1,6 +1,6 @@
 import IconButton, { DUPLICATE_GLYPH, DELETE_GLYPH } from './IconButton.jsx';
 
-export default function ItemCard({ item, index, onOpen, onDelete, onDuplicate}) {
+export default function ItemCard({ item, index, onOpen, onDelete, onDuplicate, onDragStart, onDragEnd}) {
     const description = item.description;
     const dateEntered = item.dateEntered;
     const priority = item.priority;
@@ -24,9 +24,12 @@ export default function ItemCard({ item, index, onOpen, onDelete, onDuplicate}) 
                 data-index={index}
                 role="button"
                 tabIndex={0}
+                draggable
                 aria-label={completed ? `Edit the item ${description}, completed` : `Edit the item ${description}`}
                 onClick={onOpen}
-                onKeyDown={handleKeyDown}>
+                onKeyDown={handleKeyDown}
+                onDragStart={onDragStart}
+                onDragEnd={onDragEnd}>
     
             <span className={`item-description ${completed ? 'line-through' : ''}`}> {description} </span>
             <span>{dateEntered}</span>
