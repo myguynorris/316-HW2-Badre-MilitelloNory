@@ -12,6 +12,7 @@ import { cloneItem, itemValues, valuesAreEqual } from '../model/listItem.js';
 import { normalizeListName } from '../model/wolfieList.js';
 import { DuplicateItem_Transaction } from '../transactions/DuplicateItem_Transaction.js';
 import { EditItem_Transaction } from '../transactions/EditItem_Transaction.js';
+import { DeleteItem_Transaction } from '../transactions/DeleteItem_Transaction.js';
 
 /** what the item modal is currently being used for */
 export const ItemModalModes = {
@@ -21,7 +22,7 @@ export const ItemModalModes = {
 export function useListEditor() {
     const { list, operations, addTransaction, undo, redo, canUndo, canRedo } = useCurrentList();
     const { closeList } = useLists();
-    const { openItemModal, closeItemModal, inform } = useModals();
+    const { openItemModal, closeItemModal, inform, askConfirm } = useModals();
 
     function requestEditItem(index) {
         openItemModal({
@@ -37,9 +38,9 @@ export function useListEditor() {
      * nothing changed.
      *
      * @param {Object} request { mode, index, values, then } where then is
-     * 'close' or 'next'
+     * 'close' or 'next' or 'previous'
      */
-    function commitItemModal({ index, values, then = 'close' }) {
+    function commitItemModal({ mode, index, values, then = 'close' }) {
         // the alert opens on top of the item modal, so what was typed is kept
         if (values.description === '') {
             inform({ title: 'A Description Is Required', message: 'Every item needs a description.' });
@@ -53,6 +54,8 @@ export function useListEditor() {
 
         if (then === 'next') {
             requestEditItem(index + 1);
+        } else if (then === 'previous') {
+            requestEditItem(index - 1);
         } else {
             closeItemModal();
         }
@@ -61,6 +64,21 @@ export function useListEditor() {
     /** the copy is made here, once, so every redo puts back the same copy */
     function duplicateItem(index) {
         addTransaction(new DuplicateItem_Transaction(operations, index, cloneItem(list.items[index])));
+    }
+
+    function requestDeleteItem(index) {
+        const item = list.items[index];
+
+        askConfirm({
+            title: 'Delete This Item?',
+            message: `The item "${item.description}" will be deleted. This can be undone.`,
+            acceptLabel: 'Delete Item',
+            onAccept: () => {
+                addTransaction(
+                    new DeleteItem_Transaction(operations, index, item)
+                );
+            }
+        });
     }
 
     function moveItem(fromIndex, toIndex) {
@@ -82,6 +100,7 @@ export function useListEditor() {
         undo,
         redo,
         closeList,
+        requestDeleteItem,
         requestEditItem,
         commitItemModal,
         duplicateItem,

@@ -11,16 +11,23 @@
 import { IdGenerator } from '../common/IdGenerator.js';
 import { DateUtil } from '../common/DateUtil.js';
 
+export const PRIORITIES = ['High', 'Medium', 'Low'];
+
 /**
  * @param {Object} values any of the item's fields, the rest get defaults
  * @return {Object} a new item
  */
 export function createListItem(values = {}) {
+    let priority = values.priority;
+    if (!PRIORITIES.includes(priority)) {priority = 'Low';}
     return {
         id: IdGenerator.next('item'),
         description: '',
         dateEntered: DateUtil.today(),
-        ...values
+        targetDate: '',
+        completed: false,
+        ...values,
+        priority: priority
     };
 }
 
@@ -50,9 +57,14 @@ export function cloneItem(item) {
  * in: a missing id gets a new one and a malformed date is replaced with today.
  */
 export function itemFromJSON(json) {
+    let priority = json.priority;
+    if (!PRIORITIES.includes(priority)) {priority = 'Low';}
     return {
         id: json.id ?? IdGenerator.next('item'),
         description: String(json.description ?? ''),
-        dateEntered: DateUtil.clean(json.dateEntered) ?? DateUtil.today()
+        dateEntered: DateUtil.clean(json.dateEntered) ?? DateUtil.today(),
+        priority: priority,
+        targetDate: DateUtil.clean(json.targetDate) ?? '',
+        completed: json.completed === true
     };
 }

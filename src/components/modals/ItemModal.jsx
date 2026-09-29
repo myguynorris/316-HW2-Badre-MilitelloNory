@@ -37,6 +37,7 @@ import { ModalNames, useModals } from '../../context/ModalContext.jsx';
 import { useListEditor } from '../../hooks/useListEditor.js';
 import { DateUtil } from '../../common/DateUtil.js';
 import Modal, { ModalButton, ModalFooter, ModalHeading } from './Modal.jsx';
+import { PRIORITIES } from '../../model/listItem.js';
 
 export default function ItemModal() {
     const { itemModal, closeItemModal } = useModals();
@@ -48,7 +49,10 @@ export default function ItemModal() {
     // field in a single update
     const [values, setValues] = useState(() => ({
         description: itemModal.values.description ?? '',
-        dateEntered: itemModal.values.dateEntered ?? DateUtil.today()
+        dateEntered: itemModal.values.dateEntered ?? DateUtil.today(),
+        priority: itemModal.values.priority ?? 'Low',
+        targetDate: itemModal.values.targetDate ?? '',
+        completed: itemModal.values.completed ?? false
     }));
 
     function setField(field, value) {
@@ -58,7 +62,7 @@ export default function ItemModal() {
     /**
      * Validates on the way out and hands the values over.
      *
-     * @param {string} then 'close' or 'next'
+     * @param {string} then 'close' or 'next' or 'previous'
      */
     function commit(then) {
         commitItemModal({
@@ -85,6 +89,7 @@ export default function ItemModal() {
 
     // Next is meaningless on the last item
     const canGoNext = itemModal.index < itemModal.itemCount - 1;
+    const canGoPrevious = itemModal.index > 0;
 
     return (
         <Modal
@@ -103,9 +108,9 @@ export default function ItemModal() {
             </ModalHeading>
 
             <form id="item-modal-form" autoComplete="off"
-                  onKeyDown={handleFormKeyDown}
-                  onSubmit={(event) => event.preventDefault()}
-                  className="flex flex-col gap-4 p-5">
+                onKeyDown={handleFormKeyDown}
+                onSubmit={(event) => event.preventDefault()}
+                className="flex flex-col gap-4 p-5">
 
                 <div className={FIELD}>
                     <label className={FIELD_LABEL} htmlFor="item-description-input">Description</label>
@@ -131,24 +136,76 @@ export default function ItemModal() {
                             className={`${CONTROL} min-w-36`} />
                     </div>
                 </div>
-            </form>
 
+                <div className={FIELD}>
+                    <label className={FIELD_LABEL} htmlFor="item-priority-input">
+                        Priority
+                    </label>
+
+                    <select
+                        id="item-priority-input"
+                        value={values.priority}
+                        onChange={(event) => setField('priority', event.target.value)}
+                        className={CONTROL}
+                    >
+                        {PRIORITIES.map((priority) => (
+                            <option key={priority} value={priority}>
+                                {priority}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                <div className={FIELD_ROW}>
+                    <div className={FIELD}>
+                        <label className={FIELD_LABEL} htmlFor="item-target-date-input">
+                            The date this item is meant to be finished by
+                        </label>
+
+                        <input
+                            id="item-target-date-input"
+                            type="date"
+                            value={values.targetDate ?? ''}
+                            onChange={(event) => setField('targetDate', event.target.value)}
+                            className={CONTROL}
+                        />
+                    </div>
+
+                    <div className={FIELD}>
+                        <label>
+                            <input
+                                type="checkbox"
+                                checked={values.completed}
+                                onChange={(event) => setField('completed', event.target.checked)}
+                            />
+                            Completed
+                        </label>
+                    </div>
+                </div>
+            </form>
             <ModalFooter>
                 <div className="flex gap-2">
+                    <ModalButton id="item-previous-button" variant="quiet"
+                        disabled={!canGoPrevious}
+                        title="Save and move to the previous item"
+                        onClick={() => commit('previous')}>
+                        ◀&nbsp;Previous
+                    </ModalButton>
+
                     <ModalButton id="item-next-button" variant="quiet"
-                                 disabled={!canGoNext}
-                                 title="Save and move to the next item"
-                                 onClick={() => commit('next')}>
+                        disabled={!canGoNext}
+                        title="Save and move to the next item"
+                        onClick={() => commit('next')}>
                         Next&nbsp;▶
                     </ModalButton>
                 </div>
                 <div className="ml-auto flex gap-2">
                     <ModalButton id="item-cancel-button" variant="secondary"
-                                 onClick={closeItemModal}>
+                        onClick={closeItemModal}>
                         Cancel
                     </ModalButton>
                     <ModalButton id="item-ok-button" variant="primary"
-                                 onClick={() => commit('close')}>
+                        onClick={() => commit('close')}>
                         OK
                     </ModalButton>
                 </div>

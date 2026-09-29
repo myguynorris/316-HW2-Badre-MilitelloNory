@@ -1,17 +1,17 @@
 import IconButton, { DUPLICATE_GLYPH, DELETE_GLYPH } from './IconButton.jsx';
+import { DateUtil } from '../common/DateUtil.js';
 
-export default function ItemCard({ item, index, onOpen, onDelete, onDuplicate, onDragStart, onDragEnd}) {
+export default function ItemCard({ item, index, onOpen, onDelete, onDuplicate, onDragStart, onDragEnd }) {
     const description = item.description;
-    const dateEntered = item.dateEntered;
+    const dateEntered = DateUtil.format(item.dateEntered);
     const priority = item.priority;
     const targetDate = item.targetDate;
     const completed = item.completed;
 
-    let targetDateDisplay = targetDate;
-    if (!targetDate) { targetDateDisplay = '—';}
+    const targetDateDisplay = DateUtil.format(item.targetDate);
     let completedDisplay = '';
-    if (completed) {completedDisplay = '✓';}
-    
+    if (completed) { completedDisplay = '✓'; }
+
     function handleKeyDown(event) {
         if (event.key !== 'Enter' && event.key !== ' ') return;
         event.preventDefault();
@@ -19,25 +19,45 @@ export default function ItemCard({ item, index, onOpen, onDelete, onDuplicate, o
     }
 
     return (
-            <li
-                className="item-card"
-                data-index={index}
-                role="button"
-                tabIndex={0}
-                draggable
-                aria-label={completed ? `Edit the item ${description}, completed` : `Edit the item ${description}`}
-                onClick={onOpen}
-                onKeyDown={handleKeyDown}
-                onDragStart={onDragStart}
-                onDragEnd={onDragEnd}>
-    
-            <span className={`item-description ${completed ? 'line-through' : ''}`}> {description} </span>
-            <span>{dateEntered}</span>
-            <span>{priority}</span>
-            <span>{targetDateDisplay}</span>
-            <span>{completedDisplay}</span>
+        <li
+            className="item-card item-grid mt-2.5 items-center gap-3 rounded-card
+                        border-l-[0.3125rem] border-l-grey-300 bg-sbu-white
+                        px-[0.875rem] py-2.5 shadow-card first:mt-0"
+            data-index={index}
+            role="button"
+            tabIndex={0}
+            draggable
+            aria-label={completed ? `Edit the item ${description}, completed` : `Edit the item ${description}`}
+            onClick={onOpen}
+            onKeyDown={handleKeyDown}
+            onDragStart={onDragStart}
+            onDragEnd={onDragEnd}>
 
-            <div className="flex gap-1">
+            <span className="area-handle" />
+
+            <span
+                className={`item-description area-description min-w-0 truncate font-semibold
+                ${completed ? 'line-through' : ''}`}>
+                {description}
+            </span>
+
+            <span className="area-entered text-center text-[0.875rem]">
+                {dateEntered}
+            </span>
+
+            <span className="area-priority text-center">
+                {priority}
+            </span>
+
+            <span className="area-target text-center">
+                {targetDateDisplay}
+            </span>
+
+            <span className="area-completed text-center">
+                {completedDisplay}
+            </span>
+
+            <div className="area-actions flex gap-1">
                 <IconButton
                     action="duplicate-item"
                     label={`Duplicate the item ${description}`}
