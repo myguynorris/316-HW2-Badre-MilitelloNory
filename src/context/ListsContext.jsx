@@ -10,6 +10,7 @@ import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { DataStorageManager } from '../data/DataStorageManager.js';
 import { buildUnusedName, createWolfieList, DEFAULT_LIST_NAME } from '../model/wolfieList.js';
 import { useModals } from './ModalContext.jsx';
+import { cloneItem } from '../model/listItem.js';
 
 const ListsContext = createContext(null);
 
@@ -103,6 +104,26 @@ export function ListsProvider({ children }) {
         setLists(lists.filter((list) => list.id !== listId));
         if (currentListId === listId) setCurrentListId(null);
     }
+    function duplicateList(listId) {
+        setLists((previous) => {
+            const originalIndex = previous.findIndex((list) => list.id === listId);
+
+            if (originalIndex === -1) return previous;
+
+            const original = previous[originalIndex];
+            const copyName = buildUnusedName(previous, `${original.name} (Copy)`);
+
+            const copy = createWolfieList({
+                name: copyName,
+                items: original.items.map((item) => cloneItem(item))
+            });
+
+            const updated = [...previous];
+            updated.splice(originalIndex + 1, 0, copy);
+
+            return updated;
+        });
+    }
 
     /**
      * The one way to change a list's contents. updater is given the list and
@@ -124,6 +145,7 @@ export function ListsProvider({ children }) {
         closeList: () => setCurrentListId(null),
         createList,
         deleteList,
+        duplicateList,
         updateList,
         clearNameFocusRequest: () => setListNeedingNameFocus(null)
     };

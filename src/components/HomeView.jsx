@@ -16,7 +16,7 @@ import Fab from './Fab.jsx';
 import ListCard from './ListCard.jsx';
 
 export default function HomeView() {
-    const { lists, openList, createList, deleteList } = useLists();
+    const { lists, openList, createList, deleteList, duplicateList } = useLists();
     const { askConfirm } = useModals();
 
     /**
@@ -75,7 +75,7 @@ export default function HomeView() {
             <div className="relative flex min-h-0 flex-1 flex-col px-6 pt-5 max-[46rem]:px-3.5 max-[46rem]:pt-4">
                 {isEmpty ? (
                     <p id="home-empty-message"
-                       className="m-auto pb-16 text-center text-[1.0625rem] text-grey-500">
+                        className="m-auto pb-16 text-center text-[1.0625rem] text-grey-500">
                         You do not have any lists yet.<br />
                         Press the <strong>+</strong> button to make your first one.
                     </p>
@@ -91,6 +91,7 @@ export default function HomeView() {
                                 list={list}
                                 index={index}
                                 onOpen={() => openList(list.id)}
+                                onDuplicate={() => duplicateList(list.id)}
                                 onDelete={() => handleDeleteList(list)} />
                         ))}
                     </ul>
