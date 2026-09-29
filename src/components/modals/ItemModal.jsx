@@ -34,7 +34,7 @@
  */
 import { useRef, useState } from 'react';
 import { ModalNames, useModals } from '../../context/ModalContext.jsx';
-import { useListEditor } from '../../hooks/useListEditor.js';
+import { ItemModalModes, useListEditor } from '../../hooks/useListEditor.js';
 import { DateUtil } from '../../common/DateUtil.js';
 import Modal, { ModalButton, ModalFooter, ModalHeading } from './Modal.jsx';
 import { PRIORITIES } from '../../model/listItem.js';
@@ -42,6 +42,7 @@ import { PRIORITIES } from '../../model/listItem.js';
 export default function ItemModal() {
     const { itemModal, closeItemModal } = useModals();
     const { commitItemModal } = useListEditor();
+    const isCreateMode = itemModal.mode === ItemModalModes.CREATE;
 
     const descriptionRef = useRef(null);
 
@@ -88,8 +89,8 @@ export default function ItemModal() {
     }
 
     // Next is meaningless on the last item
-    const canGoNext = itemModal.index < itemModal.itemCount - 1;
-    const canGoPrevious = itemModal.index > 0;
+    const canGoNext = !isCreateMode && itemModal.index < itemModal.itemCount - 1;
+    const canGoPrevious = !isCreateMode && itemModal.index > 0;
 
     return (
         <Modal
@@ -104,7 +105,9 @@ export default function ItemModal() {
             initialFocusRef={descriptionRef}>
 
             <ModalHeading id="item-modal-heading">
-                {`Item ${itemModal.index + 1} of ${itemModal.itemCount}`}
+                {isCreateMode
+                    ? 'New Item'
+                    : `Item ${itemModal.index + 1} of ${itemModal.itemCount}`}
             </ModalHeading>
 
             <form id="item-modal-form" autoComplete="off"
@@ -206,7 +209,7 @@ export default function ItemModal() {
                     </ModalButton>
                     <ModalButton id="item-ok-button" variant="primary"
                         onClick={() => commit('close')}>
-                        OK
+                        {isCreateMode ? 'Add' : 'OK'}
                     </ModalButton>
                 </div>
             </ModalFooter>

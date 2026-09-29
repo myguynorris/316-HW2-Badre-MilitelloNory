@@ -8,15 +8,17 @@
 import { useCurrentList } from '../context/CurrentListContext.jsx';
 import { useLists } from '../context/ListsContext.jsx';
 import { useModals } from '../context/ModalContext.jsx';
-import { cloneItem, itemValues, valuesAreEqual } from '../model/listItem.js';
+import { cloneItem, createListItem, itemValues, valuesAreEqual } from '../model/listItem.js';
 import { normalizeListName } from '../model/wolfieList.js';
 import { DuplicateItem_Transaction } from '../transactions/DuplicateItem_Transaction.js';
 import { EditItem_Transaction } from '../transactions/EditItem_Transaction.js';
 import { DeleteItem_Transaction } from '../transactions/DeleteItem_Transaction.js';
+import { AddItem_Transaction } from '../transactions/AddItem_Transaction.js';
 
 /** what the item modal is currently being used for */
 export const ItemModalModes = {
-    EDIT: 'edit'
+    EDIT: 'edit',
+    CREATE: 'create'
 };
 
 export function useListEditor() {
@@ -30,6 +32,20 @@ export function useListEditor() {
             index,
             itemCount: list.items.length,
             values: itemValues(list.items[index])
+        });
+    }
+    function requestAddItem() {
+        openItemModal({
+            mode: ItemModalModes.CREATE,
+            index: list.items.length,
+            itemCount: list.items.length,
+            values: {
+                description: '',
+                dateEntered: '',
+                priority: 'Low',
+                targetDate: '',
+                completed: false
+            }
         });
     }
 
@@ -47,7 +63,20 @@ export function useListEditor() {
             return;
         }
 
+        if (mode === ItemModalModes.CREATE) {
+            const item = createListItem(values);
+            const addIndex = list.items.length;
+
+            addTransaction(
+                new AddItem_Transaction(operations, addIndex, item)
+            );
+
+            closeItemModal();
+            return;
+        }
+
         const oldValues = itemValues(list.items[index]);
+
         if (!valuesAreEqual(oldValues, values)) {
             addTransaction(new EditItem_Transaction(operations, index, oldValues, values));
         }
@@ -102,6 +131,7 @@ export function useListEditor() {
         closeList,
         requestDeleteItem,
         requestEditItem,
+        requestAddItem,
         commitItemModal,
         duplicateItem,
         moveItem,
